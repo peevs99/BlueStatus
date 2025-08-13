@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Error - DC Water Applications Service Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container mt-5 text-center">
+        <img src="https://www.dcwater.com/sites/default/files/logo-dark.png" 
+             alt="DC Water Logo" 
+             class="mb-4" 
+             style="max-width: 200px;">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <i class="fas fa-exclamation-triangle text-warning mb-3" style="font-size: 3rem;"></i>
+                <h1 class="text-warning mb-3">Authentication Error</h1>
+                <p class="lead mb-4">{{ result.get('error_description', 'An unexpected error occurred.') }}</p>
+                <div class="d-flex justify-content-center">
+                    <a href="{{ url_for('login') }}" class="btn btn-primary">
+                        <i class="fas fa-redo mr-2"></i>Try Again
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

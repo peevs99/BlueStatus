@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DC Water Applications Service Status</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap CSS -->
+  <link
+    rel="stylesheet"
+    href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+  >
+  <!-- FontAwesome for icons -->
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+  >
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+  <!-- Initial Loader -->
+  <div id="initial-loader" class="initial-loading">
+    <div class="loader-content">
+      <img
+        src="https://www.dcwater.com/sites/default/files/logo-dark.png"
+        alt="DC Water Logo"
+        class="loader-logo"
+      >
+      <div class="loader-spinner">
+        <i class="fas fa-circle-notch fa-spin"></i>
+      </div>
+      <div class="loader-text">Loading Service Status...</div>
+    </div>
+  </div>
+
+  <!-- Fixed Top Section -->
+  <div class="fixed-top-section">
+    <div class="header-container">
+      <div class="logo-section">
+        <img
+          src="https://www.dcwater.com/sites/default/files/logo-dark.png"
+          alt="DC Water Logo"
+          class="logo"
+        >
+      </div>
+      <div class="title-section">
+        <h1>DC Water Applications Service Status</h1>
+      </div>
+      <div class="header-search">
+        <div class="search-input-group">
+          <i class="fas fa-search"></i>
+          <input
+            type="text"
+            id="searchInput"
+            class="form-control search-bar"
+            placeholder="Search..."
+          >
+        </div>
+      </div>
+      <div class="tutorial-section">
+        <button id="startTutorial" class="btn tutorial-btn">
+          <i class="fas fa-question-circle"></i>
+          Tutorial
+        </button>
+        <button id="themeToggle" class="theme-toggle" aria-label="Toggle dark mode">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Summary Section -->
+  <div class="status-summary-section">
+    <div class="summary-container">
+      <div class="summary-box">
+        <h6>Host Status:</h6>
+        <div class="summary-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total:</span>
+            <span class="stat-value" id="hostTotal">0</span>
+          </div>
+          <div class="stat-item">
+            <i class="fa-solid fa-droplet green-drop"></i>
+            <span class="stat-value" id="hostOnline">0</span>
+          </div>
+          <div class="stat-item">
+            <i class="fa-solid fa-droplet yellow-drop"></i>
+            <span class="stat-value" id="hostWarning">0</span>
+          </div>
+          <div class="stat-item">
+            <i class="fa-solid fa-droplet red-drop"></i>
+            <span class="stat-value" id="hostCritical">0</span>
+          </div>
+          <div class="stat-item">
+            <i class="fa-solid fa-droplet gray-drop"></i>
+            <span class="stat-value" id="hostUnknown">0</span>
+          </div>
+        </div>
+        <div class="summary-divider"></div>
+        <h6>Service Status:</h6>
+        <div class="summary-stats">
+          <div class="stat-item">
+            <span class="stat-label">Total:</span>
+            <span class="stat-value" id="serviceTotal">0</span>
+          </div>
+          <div class="stat-item">
+            <i class="fa-solid fa-droplet green-drop"></i>
+            <span class="stat-value" id="serviceOnline">0</span>
+          </div>
+          <div class="stat-item">
+            <i class="fa-solid fa-droplet yellow-drop"></i>
+            <span class="stat-value" id="serviceWarning">0</span>
+          </div>
+          <div class="stat-item">
+            <i class="fa-solid fa-droplet red-drop"></i>
+            <span class="stat-value" id="serviceCritical">0</span>
+          </div>
+          <div class="stat-item">
+            <i class="fa-solid fa-droplet gray-drop"></i>
+            <span class="stat-value" id="serviceUnknown">0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="cards-section">
+      <div class="accordion" id="hostAccordion">
+        {% for host in hosts %}
+        <div class="card mb-3 shadow-sm host-card">
+          <div
+            class="card-header"
+            id="heading{{ loop.index }}"
+            data-toggle="collapse"
+            data-target="#collapse{{ loop.index }}"
+            aria-expanded="false"
+            aria-controls="collapse{{ loop.index }}"
+            style="cursor: pointer;"
+          >
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-plus collapse-icon me-2"></i>
+                <span class="font-weight-bold">{{ host.display_name }}</span>
+              </div>
+              <span class="status-indicator">
+                {% if host.services and host.services[0].status == 'Online' %}
+                  <i class="fa-solid fa-droplet green-drop"></i>
+                {% elif host.services and host.services[0].status == 'Warning' %}
+                  <i class="fa-solid fa-droplet yellow-drop"></i>
+                {% elif host.services and host.services[0].status == 'Critical' %}
+                  <i class="fa-solid fa-droplet red-drop"></i>
+                {% else %}
+                  <i class="fa-solid fa-droplet gray-drop"></i>
+                {% endif %}
+              </span>
+            </div>
+          </div>
+          <div
+            id="collapse{{ loop.index }}"
+            class="collapse"
+            aria-labelledby="heading{{ loop.index }}"
+            data-parent="#hostAccordion"
+          >
+            <div class="card-body">
+              {% if host.services %}
+              <table class="table table-hover">
+                <thead>
+                  <tr>
+                    <th>Service Name</th>
+                    <th>Status</th>
+                    <th>Last Check</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for service in host.services %}
+                  <tr>
+                    <td>{{ service.service_name }}</td>
+                    <td>
+                      <span
+                        class="badge
+                          {% if service.status == 'Online' %}
+                            badge-success
+                          {% elif service.status == 'Warning' %}
+                            badge-warning
+                          {% elif service.status == 'Critical' %}
+                            badge-danger
+                          {% else %}
+                            badge-secondary
+                          {% endif %}
+                        "
+                      >
+                        {{ service.status }}
+                      </span>
+                    </td>
+                    <td>{{ service.last_check }}</td>
+                  </tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+              {% else %}
+              <p>No services available.</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    
+    <!-- Right Sidebar -->
+    <div class="right-sidebar">
+      <div class="refresh-box">
+        <div class="refresh-content">
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="custom-control custom-switch">
+              <input
+                type="checkbox"
+                class="custom-control-input"
+                id="autoRefreshToggle"
+                checked
+              >
+              <label
+                class="custom-control-label"
+                for="autoRefreshToggle"
+              >
+                Auto (2 mins)
+              </label>
+            </div>
+            <button id="manualRefresh" class="btn">
+              <i class="fas fa-sync-alt"></i>
+              Refresh Now
+            </button>
+          </div>
+          <small id="lastUpdated" class="text-muted d-block"></small>
+        </div>
+      </div>
+      
+      <div class="status-legend">
+        <h5>Status Legend</h5>
+        <div class="legend-items">
+          <div class="legend-item">
+            <i class="fa-solid fa-droplet green-drop"></i>
+            <span>Online</span>
+          </div>
+          <div class="legend-item">
+            <i class="fa-solid fa-droplet yellow-drop"></i>
+            <span>Warning</span>
+          </div>
+          <div class="legend-item">
+            <i class="fa-solid fa-droplet red-drop"></i>
+            <span>Critical</span>
+          </div>
+          <div class="legend-item">
+            <i class="fa-solid fa-droplet gray-drop"></i>
+            <span>Unknown</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="filter-box">
+        <h5>Filter Options</h5>
+        <div class="filter-options">
+          <div class="custom-control custom-switch mb-2">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="showIssuesOnly"
+            >
+            <label
+              class="custom-control-label"
+              for="showIssuesOnly"
+            >
+              Show Issues Only
+            </label>
+          </div>
+          <div class="custom-control custom-switch mb-2">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="showCriticalOnly"
+            >
+            <label
+              class="custom-control-label"
+              for="showCriticalOnly"
+            >
+              Critical Only
+            </label>
+          </div>
+          <div class="custom-control custom-switch mb-2">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="showWarningOnly"
+            >
+            <label
+              class="custom-control-label"
+              for="showWarningOnly"
+            >
+              Warning Only
+            </label>
+          </div>
+          <div class="custom-control custom-switch mb-2">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="showUnknownOnly"
+            >
+            <label
+              class="custom-control-label"
+              for="showUnknownOnly"
+            >
+              Unknown Only
+            </label>
+          </div>
+          <div class="custom-control custom-switch mb-2">
+            <input
+              type="checkbox"
+              class="custom-control-input"
+              id="expandAllCards"
+            >
+            <label
+              class="custom-control-label"
+              for="expandAllCards"
+            >
+              Expand All Cards
+            </label>
+          </div>
+        </div>
+        <div class="filter-messages">
+          <div id="no-issues-message" class="alert alert-success mt-3" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            No issues found - all services are online!
+          </div>
+          
+          <div id="no-critical-message" class="alert alert-success mt-3" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            No critical issues found - all services are stable!
+          </div>
+          
+          <div id="no-warning-message" class="alert alert-success mt-3" style="display: none;">
+            <i class="fas fa-check-circle"></i>
+            No warnings found - all services are running normally!
+          </div>
+          
+          <div id="no-unknown-message" class="alert alert-info mt-3" style="display: none;">
+            <i class="fas fa-info-circle"></i>
+            No unknown states found - all services have clear status!
+          </div>
+          
+          <div id="no-results-message" class="alert alert-info mt-3" style="display: none;">
+            <i class="fas fa-search"></i>
+            No services match your current search and filters.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS & Dependencies -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+  <!-- Custom JS -->
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
